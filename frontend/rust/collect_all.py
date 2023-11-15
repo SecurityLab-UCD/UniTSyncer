@@ -9,6 +9,9 @@ from unitsyncer.util import replace_tabs
 import json
 from frontend.util import mp_map_repos, wrap_repo, run_with_timeout
 from collections import Counter
+import seaborn as sns
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 def has_test(file_path):
@@ -70,9 +73,19 @@ def collect_test_n_focal(file_path: str, is_fuzz: bool = False):
     return map(get_focal_for_test, collect_test_funcs(ast_util))
 
 
+def collect_failed_reason(repo_path):
+    with open("failed_repos.txt", "a") as f:
+        f.write(repo_path + "\n")
+
+
 @run_with_timeout
 def collect_from_repo(
-    repo_id: str, repo_root: str, test_root: str, focal_root: str, fuzz: bool
+    repo_id: str,
+    repo_root: str,
+    test_root: str,
+    focal_root: str,
+    fuzz: bool,
+    plot_failed: bool = False,
 ):
     """collect all test functions in the given project
     return (status, nfile, ntest)
@@ -93,6 +106,8 @@ def collect_from_repo(
         funcs = collect_test_n_focal(f, is_fuzz=fuzz)
         tests[f] = funcs
     if len(tests.keys()) == 0:
+        if plot_failed:
+            collect_failed_reason(repo_path)
         return 2, 0, sum(len(list(v)) for v in tests.values())
     # save to disk
     n_test_func = 0
@@ -121,6 +136,7 @@ def main(
     nprocs: int = 0,
     limits: int = -1,
     fuzz: bool = True,
+    plot_failed: bool = False,
 ):
     try:
         repo_id_list = [l.strip() for l in open(repo_id, "r").readlines()]
@@ -140,6 +156,7 @@ def main(
         test_root=test_root,
         focal_root=focal_root,
         fuzz=fuzz,
+        plot_failed=plot_failed,
     )
 
     filtered_results = [i for i in status_ntest_nfocal if i is not None]
