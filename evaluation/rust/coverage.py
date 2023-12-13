@@ -52,7 +52,7 @@ def get_coverage(
     return Some(float(cov_obj["message"][:-1]))
 
 
-def get_tests(workspace_dir: str) -> Iterator[str]:
+def get_tests(workspace_dir: str) -> Iterable[str]:
     """get all test targets from project by looking for fn with #[test] in tests dir"""
 
     def get_tests_from_file(fpath: str) -> list[str]:
