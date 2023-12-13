@@ -1,5 +1,5 @@
 import json
-from typing import Iterable
+from typing import Iterable, Iterator
 import fire
 import os
 from tree_sitter.binding import Node
@@ -12,8 +12,7 @@ from unitsyncer.common import UNITSYNCER_HOME
 from returns.maybe import Maybe, Some, Nothing
 from frontend.rust.rust_util import get_test_functions
 from frontend.rust.collect_all import collect_test_files
-from functools import reduce
-from operator import add
+from unitsyncer.util import concatMap
 
 
 def clean_workspace(workspace_dir: str):
@@ -53,7 +52,7 @@ def get_coverage(
     return Some(float(cov_obj["message"][:-1]))
 
 
-def get_tests(workspace_dir: str) -> list[str]:
+def get_tests(workspace_dir: str) -> Iterator[str]:
     """get all test targets from project by looking for fn with #[test] in tests dir"""
 
     def get_tests_from_file(fpath: str) -> list[str]:
@@ -64,12 +63,9 @@ def get_tests(workspace_dir: str) -> list[str]:
         test_nodes = get_test_functions(ast_util, tree.root_node)
         return [t.unwrap() for t in map(ast_util.get_name, test_nodes) if t != Nothing]
 
-    return reduce(
-        add,
-        map(
-            get_tests_from_file,
-            collect_test_files(os.path.join(workspace_dir, "tests"), False),
-        ),
+    return concatMap(
+        get_tests_from_file,
+        collect_test_files(os.path.join(workspace_dir, "tests"), False),
     )
 
 
@@ -91,7 +87,7 @@ def get_testcase_coverages(workspace_dir: str) -> dict[str, float]:
 
 def main():
     workspace_dir = os.path.abspath(
-        "data/rust_repos//marshallpierce-rust-base64/marshallpierce-rust-base64-4ef33cc"
+        "data/repos/marshallpierce-rust-base64/marshallpierce-rust-base64-4ef33cc"
     )
 
     print(get_testcase_coverages(workspace_dir))
