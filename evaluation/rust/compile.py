@@ -119,6 +119,21 @@ def construct_use_delcs(workspace_dir: str, type: str) -> set[str]:
     return set(concatMap(flatten_use_delc, use_lists))
 
 
+def write_tests_to_workspace(workspace_dir: str, tests: list[str], test_type: str):
+    """get compile rate of generated testcases
+
+    Args:
+        workspace_dir (str): path to the project/crate's workspace dir
+        tests (list[str]): list of generated test functions
+        test_type (str): tests (unittest) or fuzz
+    """
+    use_delc = "\n".join(construct_use_delcs(workspace_dir, test_type))
+    for i, test in enumerate(tests):
+        p = os.path.join(workspace_dir, "tests", f"generated_{test_type}_{i}.rs")
+        with open(p, "w") as f:
+            f.write(use_delc + "\n\n" + "#[test]\n" + test)
+
+
 def main():
     workspace_dir = os.path.abspath(
         "data/repos/marshallpierce-rust-base64/marshallpierce-rust-base64-4ef33cc"
