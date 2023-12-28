@@ -28,24 +28,29 @@ import json
 
 
 def get_lsp_cmd(language: str) -> Optional[list[str]]:
+    cmd: list[str]
     match language:
         case LANGUAGE_IDENTIFIER.PYTHON:
-            return ["python3", "-m", "pylsp"]
+            cmd = ["python3", "-m", "pylsp"]
         case LANGUAGE_IDENTIFIER.C | LANGUAGE_IDENTIFIER.CPP:
-            return ["clangd"]
+            cmd = ["clangd"]
         case LANGUAGE_IDENTIFIER.JAVA:
-            return [
+            cmd = [
                 "bash",
                 f"{UNITSYNCER_HOME}/java-language-server/dist/lang_server_linux.sh",
             ]
         case LANGUAGE_IDENTIFIER.JAVASCRIPT:
-            return ["typescript-language-server", "--stdio"]
+            cmd = ["typescript-language-server", "--stdio"]
         case LANGUAGE_IDENTIFIER.RUST:
-            return ["rust-analyzer"]
+            cmd = ["rust-analyzer"]
         case LANGUAGE_IDENTIFIER.GO:
-            return ["gopls"]
+            cmd = ["gopls"]
+        case LANGUAGE_IDENTIFIER.RUBY:
+            cmd = ["ruby-lsp"]
         case _:
             return None
+
+    return cmd
 
 
 class Synchronizer:
