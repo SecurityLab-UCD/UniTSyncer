@@ -46,6 +46,5 @@ def main():
     print("generated test code:")
     print(test_code)
 
-# 程序入口
 if __name__ == "__main__":
     fire.Fire(main)
